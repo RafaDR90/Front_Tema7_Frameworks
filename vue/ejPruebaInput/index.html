@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link rel="stylesheet" href="./style.css">
+    <script>
+        window.onload=()=>{
+          const app = Vue.createApp({
+          data() {
+            return {
+              nuevoItem: '',
+              items: [],
+              cantidad:0,
+              filtrarActivado:false,
+              textoFiltrado:''
+            };
+          },
+          methods: {
+                                    //ARREGLAR ESTA PUTA MIERDA
+            CambiarPrioridad(nuevaPrioridad,item){
+              item.prioridad=nuevaPrioridad;
+            },
+            agregarItem() {
+              if (this.nuevoItem.trim() !== '') {
+                this.items.push({
+                  texto:this.nuevoItem,
+                  prioridad:2,
+                  fecha: Date.now(),
+                  completada:false
+                });
+                console.log(this.items)
+                this.nuevoItem = '';
+                this.cantidad=this.items.length;
+                localStorage.setItem('items', JSON.stringify(this.items));
+             }
+            },
+            cargarItemsDesdeLocalStorage() {
+              const storedItems = localStorage.getItem('items');
+              if (storedItems) {
+                this.items = JSON.parse(storedItems);
+                this.cantidad = this.items.length;
+              }
+            },
+            getClassByPrioridad(num,item){
+              if(num==item){
+                return 'marcado'
+              }else{
+                return 'botonPrio'
+              }
+              
+            },
+          },
+          computed:{
+            
+            filtrar() {
+                if (!this.filtrarActivado) {
+                    return this.items;
+                } else {
+                    const textoFiltradoLower = this.textoFiltrado.toLowerCase();
+                    return this.items.filter(item => item.texto.toLowerCase().includes(textoFiltradoLower));
+                }
+            }
+          },
+          mounted() {
+            this.cargarItemsDesdeLocalStorage();
+          }
+        }).mount('#app');
+
+        }
+    </script>
+</head>
+<body>
+  <div id="app">
+    <p>Tienes {{cantidad}} items.</p>
+    <input v-model="nuevoItem" type="text" placeholder="Escribe algo">
+    <button @click="agregarItem">Agregar</button>
+    <label for="checkbox"> Filtrar</label>
+    <input type="checkbox" v-model="filtrarActivado">
+    <input type="text" v-if="filtrarActivado" v-model="textoFiltrado">
+    <ul>
+      <li v-for="item in filtrar" :key="item.fecha">
+        <p>{{ item.texto }}</p>
+        <span class="titulin">Prioridad:</span>
+        <span :class="getClassByPrioridad(3,item.prioridad)" @click:="CambiarPrioridad(3,item)"> Baja </span>
+        <span :class="getClassByPrioridad(2,item.prioridad)" @click:="CambiarPrioridad(2,item)"> Medio </span>
+        <span :class="getClassByPrioridad(1,item.prioridad)" @click:="CambiarPrioridad(1,item)"> Alta </span>
+      </li>
+    </ul>
+  </div>
+</body>
+</html>
